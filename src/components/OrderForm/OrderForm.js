@@ -1,12 +1,41 @@
+import { postOrder } from "../../apiCalls";
 import { useState } from "react";
 
 function OrderForm(props) {
   const [name, setName] = useState("");
   const [ingredients, setIngredients] = useState([]);
+  const [ingredient, setIngredient] = useState('')
+
+  function addIngredients(e) {
+    e.preventDefault()
+    const newIngredient = e.target.value
+    setIngredients([...ingredients, newIngredient])
+  }
+
+  console.log('ingredient: ', ingredients)
 
   function handleSubmit(e) {
     e.preventDefault();
-    clearInputs();
+
+    if(!ingredients.length || !name) {
+      return
+    }
+
+    const newOrder = {
+      id: Date.now(),
+      name: name,
+      ingredients: ingredients
+    }
+
+    console.log('newOrder: ', newOrder)
+    postOrder(newOrder)
+    .then(data => {
+      props.addOrder(data)
+      clearInputs();
+    })
+    .catch(error => console.log(error))
+    
+    
   }
 
   function clearInputs() {
@@ -28,12 +57,14 @@ function OrderForm(props) {
     "cilantro",
     "sour cream",
   ];
+  
   const ingredientButtons = possibleIngredients.map((ingredient) => {
     return (
       <button
         key={ingredient}
         name={ingredient}
-        // onClick={(e) => }
+        value={ingredient}
+        onClick={(e) => addIngredients(e)}
       >
         {ingredient}
       </button>
@@ -47,7 +78,7 @@ function OrderForm(props) {
         placeholder="Name"
         name="name"
         value={name}
-        // onChange={(e) => }
+        onChange={(e) => setName(e.target.value)}
       />
 
       {ingredientButtons}
