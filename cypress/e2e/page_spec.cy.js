@@ -40,7 +40,7 @@ describe("Burrito Page", () => {
     cy.get(':nth-child(4) > .ingredient-list > :nth-child(5)').should('contain', 'jalapeno')
   })
 
-  it('should not do anything if no name and at least one ingredient is submitted', () => {
+  it('should display a guidance message to the user and not create a new order unless a name and at least one ingredient is submitted', () => {
     cy.intercept('POST', 'http://localhost:3001/api/v1/orders', {
       statusCode: 201,
       body: {
@@ -48,8 +48,33 @@ describe("Burrito Page", () => {
         ingredients: ['beans', 'lettuce', 'carnitas', 'queso fresco', 'jalapeno']
       }
     }).as('postOrder')
+    cy.get('section').children().should('have.length', 3)
+    cy.get('.order').first().should('contain', 'Sue')
+    cy.get(':nth-child(1) > .ingredient-list > :nth-child(1)').should('contain', 'beans')
+    cy.get(':nth-child(1) > .ingredient-list > :nth-child(5)').should('contain', 'jalapeno')
+    cy.get('.order').last().should('contain', 'Pete')
+    cy.get(':nth-child(3) > .ingredient-list > :nth-child(1)').should('contain', 'sofritas')
+    cy.get(':nth-child(3) > .ingredient-list > :nth-child(5)').should('contain', 'queso fresco')
+
+    // test for no name and 1 ingredient
     cy.get('input').should('not.have.value')
     cy.get('[name="beans"]').click()
+    cy.get('p').contains('Order: beans')
+    cy.get(':nth-child(15)').click()
+    cy.get(':nth-child(16)').contains('Please fill in both a name and at least 1 ingredient.')
+    cy.get('section').children().should('have.length', 3)
+
+    // test for no name and no ingredients
+    cy.get('input').should('not.have.value')
+    cy.get('p').contains('Order: Nothing selected')
+    cy.get(':nth-child(15)').click()
+    cy.get(':nth-child(16)').contains('Please fill in both a name and at least 1 ingredient.')
+    cy.get('section').children().should('have.length', 3)
+
+    // test for name input but no ingredients
+    cy.get('input').type('Sam').should('have.value','Sam')
+    cy.get('p').contains('Order: Nothing selected')
+    cy.get(':nth-child(16)').contains('Please fill in both a name and at least 1 ingredient.')
     cy.get(':nth-child(15)').click()
     cy.get('section').children().should('have.length', 3)
   })

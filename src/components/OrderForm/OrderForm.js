@@ -4,7 +4,7 @@ import { useState } from "react";
 function OrderForm(props) {
   const [name, setName] = useState("");
   const [ingredients, setIngredients] = useState([]);
-  const [ingredient, setIngredient] = useState('')
+  const [inputError, setInputError] = useState('')
 
   function addIngredients(e) {
     e.preventDefault()
@@ -18,6 +18,8 @@ function OrderForm(props) {
     e.preventDefault();
 
     if(!ingredients.length || !name) {
+      setInputError('Please fill in both a name and at least 1 ingredient.')
+      clearInputs()
       return
     }
 
@@ -31,6 +33,7 @@ function OrderForm(props) {
     postOrder(newOrder)
     .then(data => {
       props.addOrder(data)
+      setInputError('')
       clearInputs();
     })
     .catch(error => console.log(error))
@@ -86,6 +89,7 @@ function OrderForm(props) {
       <p>Order: {ingredients.join(", ") || "Nothing selected"}</p>
 
       <button onClick={(e) => handleSubmit(e)}>Submit Order</button>
+      {inputError && <p>{inputError}</p>}
     </form>
   );
 }
